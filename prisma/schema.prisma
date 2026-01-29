@@ -50,26 +50,34 @@ model Report {
 }
 
 model Group {
-  id            Int      @id @default(autoincrement())
-  name          String   
-  course        String   
+  id        Int    @id @default(autoincrement())
+  name      String
+  course    String
 
-  advisorId     Int?    
-  coAdvisorId   Int?    
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  advisorId Int?
+  advisor   Advisor? @relation("Advisor", fields: [advisorId], references: [id])
 
-  reports       Report[]              
-  students      Student[]          
+  coAdvisorId Int?
+  coAdvisor   Advisor? @relation("CoAdvisor", fields: [coAdvisorId], references: [id])
+
+  reports   Report[]
+  students  Student[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("groups")
 }
 
+
 model Student {
   id        Int      @id @default(autoincrement())
+  user      User     @relation("UserToStudent", fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int      @unique
   name      String   
   email     String   @unique
   ra        String?  @unique
+
 
   course    String?  
   class     String?         
@@ -87,4 +95,104 @@ model Student {
   updatedAt DateTime @updatedAt
 
   @@map("students")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String   
+  name      String
+  phone     String?
+  status    String   @default("active")
+  roles     UserRole[]
+
+  student     Student?    @relation("UserToStudent")
+  advisor     Advisor?    @relation("UserToAdvisor")
+  coordinator Coordinator? @relation("UserToCoordinator")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+model Role {
+  id          Int          @id @default(autoincrement())
+  name        String       @unique     
+  description String? 
+
+ 
+  users       UserRole[]   
+
+ 
+  permissions RolePermission[]
+
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+
+model Permission {
+  id          Int              @id @default(autoincrement())
+  name        String           @unique    
+  action      String?             
+  resource    String?                       
+  description String?
+
+  roles       RolePermission[]
+
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+}
+
+
+model UserRole {
+  userId    Int
+  roleId    Int
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  assignedAt DateTime @default(now())
+
+  @@id([userId, roleId])  
+}
+
+model RolePermission {
+  roleId       Int
+  permissionId Int
+
+  role       Role       @relation(fields: [roleId],       references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  assignedAt DateTime @default(now())
+
+  @@id([roleId, permissionId])  
+}
+
+
+model Advisor {
+  id        Int      @id @default(autoincrement())
+  user      User     @relation("UserToAdvisor", fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int      @unique
+
+  specialty String?
+  lattes    String?
+
+  advisedGroups   Group[] @relation("Advisor")
+  coAdvisedGroups Group[] @relation("CoAdvisor")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+model Coordinator {
+  id        Int      @id @default(autoincrement())
+  user      User     @relation("UserToCoordinator", fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int      @unique
+
+  department String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
