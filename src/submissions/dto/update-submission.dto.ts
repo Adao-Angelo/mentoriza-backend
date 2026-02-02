@@ -6,12 +6,14 @@ import { CreateSubmissionDto } from './create-submission.dto';
 export class UpdateSubmissionDto extends PartialType(CreateSubmissionDto) {
   @ApiPropertyOptional({
     description: 'Novo status da submissão',
-    enum: ['open', 'closed'],
-    example: 'closed',
+    enum: ['active', 'inactive'],
+    example: 'inactive',
   })
   @IsOptional()
-  @IsIn(['open', 'closed'], { message: 'status deve ser "open" ou "closed"' })
-  status?: 'open' | 'closed';
+  @IsIn(['active', 'inactive'], {
+    message: 'status deve ser "active" ou "inactive"',
+  })
+  status?: 'active' | 'inactive';
 
   @ApiPropertyOptional({
     description: 'Nova data de término (ISO 8601)',

@@ -4,7 +4,11 @@
   "sourceRoot": "src",
   "compilerOptions": {
     "assets": [
-      "src/generated/prisma/**/*"
+      {
+        "include": "src/generated/prisma /**/*",
+        "outDir": "dist/prisma",
+        "watchAssets": true
+      }
     ],
     "watchAssets": true,
     "deleteOutDir": true

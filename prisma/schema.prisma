@@ -1,12 +1,31 @@
 generator client {
- provider      = "prisma-client"
-  output        = "../src/generated/prisma"
-  moduleFormat  = "cjs"
-
+  provider        = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
+}
+
+
+enum SubmissionStatus {
+  active
+  inactive
+}
+
+enum ReportStatus {
+  under_review
+  approved
+  rejected
+}
+
+enum UserStatus {
+  active
+  inactive
+}
+
+enum StudentStatus {
+  active
+  inactive
 }
 
 
@@ -24,7 +43,7 @@ model Submission {
 id        Int      @id @default(autoincrement())
   startDate DateTime @default(now()) 
   endDate   DateTime
-  status    String  
+  status    SubmissionStatus @default(active)
   stage     Int    
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -38,7 +57,7 @@ model Report {
   fileUrl       String   
   publicId      String?  
   submissionId  Int      
-  status        String   @default("pending") 
+  status        ReportStatus @default(under_review)
   score         Float? 
   observations  String?  
   keyResults    Json?  
@@ -59,6 +78,9 @@ model Group {
 
   coAdvisorId Int?
   coAdvisor   Advisor? @relation("CoAdvisor", fields: [coAdvisorId], references: [id])
+
+  isPublished Boolean @default(false)
+  publishedAt DateTime?
 
   reports   Report[]
   students  Student[]
@@ -86,7 +108,7 @@ model Student {
   cpf       String?  @unique
   birthDate DateTime?
 
-  status    String?  @default("active")
+  status    StudentStatus @default(active)
 
   groupId   Int?
   group     Group?   @relation(fields: [groupId], references: [id], onDelete: SetNull)
@@ -103,7 +125,7 @@ model User {
   password  String   
   name      String
   phone     String?
-  status    String   @default("active")
+  status    UserStatus @default(active)
   roles     UserRole[]
 
   student     Student?    @relation("UserToStudent")

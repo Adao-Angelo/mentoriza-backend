@@ -16,7 +16,7 @@ export class SubmissionsService {
       data: {
         endDate: new Date(dto.endDate),
         stage: dto.stage,
-        status: 'open',
+        status: 'active',
       },
     });
   }
@@ -53,7 +53,7 @@ export class SubmissionsService {
     // Aqui usamos await para satisfazer o lint
     const active = await this.prisma.submission.findFirst({
       where: {
-        status: 'open',
+        status: 'active',
         endDate: {
           gt: now,
         },
