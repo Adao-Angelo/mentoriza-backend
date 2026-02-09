@@ -9,7 +9,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { ReportsModule } from './reports/reports.module';
 import { SeedModule } from './seed/seed.module';
 import { SubmissionsModule } from './submissions/submissions.module';
-import { UploadModule } from './upload/upload.module';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -26,13 +26,14 @@ import { UploadModule } from './upload/upload.module';
         },
       },
     }),
-    UploadModule,
+    // UploadModule,
     IndicatorsModule,
     PrismaModule,
     SeedModule,
     SubmissionsModule,
     ReportsModule,
     EmailModule,
+    UserModule,
   ],
   controllers: [AppController],
   providers: [AppService],

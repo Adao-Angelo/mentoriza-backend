@@ -77,46 +77,13 @@ export class UploadController {
 
     await this.reportQueueService.enqueueReportEvaluation({
       reportId: report.id,
-      groupId,
+      groupId: Number(groupId),
       submissionId: activeSubmission.id,
       fileUrl: url,
       publicId,
       indicators,
       requestedAt: new Date().toISOString(),
     });
-
-    const students = await this.prisma.student.findMany({
-      where: { groupId: Number(groupId) },
-      select: { email: true },
-    });
-    const studentEmails = students
-      .map((s) => s.email)
-      .filter((email) => email && email.trim() !== '');
-
-    const group = await this.prisma.group.findUnique({
-      where: { id: Number(groupId) },
-      include: {
-        advisor: {
-          include: { user: { select: { email: true } } },
-        },
-      },
-    });
-
-    const advisorEmail = group?.advisor?.user?.email;
-
-    const allRecipients = [...studentEmails];
-    if (advisorEmail) {
-      allRecipients.push(advisorEmail);
-    }
-
-    const groupName = group?.name || `Grupo ${groupId}`;
-    const submissionName = `Submissão ${activeSubmission.stage || activeSubmission.id}`;
-
-    await this.emailQueueService.sendReportUnderReviewToMany(
-      allRecipients,
-      groupName,
-      submissionName,
-    );
 
     return {
       success: true,

@@ -1,5 +1,6 @@
-import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 import { EmailModule } from 'src/email/email.module';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ReportQueueService } from './report-queue.service';
@@ -10,9 +11,20 @@ import { ReportsService } from './reports.service';
 @Module({
   imports: [
     EmailModule,
-    BullModule.registerQueue({
-      name: 'uploads-reports',
-    }),
+    ConfigModule,
+    ClientsModule.register([
+      {
+        name: 'REPORT_PROCESSING_SERVICE',
+        transport: Transport.RMQ,
+        options: {
+          urls: [
+            process.env.RABBITMQ_URL || 'amqp://guest:guest@localhost:5672',
+          ],
+          queue: 'report_processing',
+          queueOptions: { durable: true },
+        },
+      },
+    ]),
   ],
   controllers: [ReportsController],
   providers: [

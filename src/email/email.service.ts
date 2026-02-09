@@ -67,16 +67,6 @@ export class EmailService {
   }
 
   async sendEmail(payload: EmailPayload): Promise<void> {
-    this.logger.log('From email config:', {
-      host: this.configService.get<string>(
-        'EMAIL_HOST',
-        'live.smtp.mailtrap.io',
-      ),
-      port: Number(this.configService.get<string>('EMAIL_PORT', '587')),
-      user: this.configService.get<string>('EMAIL_USER', 'api'),
-      pass: this.configService.get<string>('EMAIL_PASSWORD'),
-      from: this.configService.get('EMAIL_FROM'),
-    });
     try {
       const html = this.getTemplate(payload.type, payload.data);
 
