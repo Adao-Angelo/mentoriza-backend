@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-floating-promises */
-
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
@@ -20,23 +18,42 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('/', app, document);
+
+  SwaggerModule.setup('api', app, document);
 
   if (process.env.ENABLE_RMQ === 'true') {
-    app.connectMicroservice<MicroserviceOptions>({
-      transport: Transport.RMQ,
-      options: {
-        urls: [process.env.RMQ_URL || ''],
-        queue: 'report_results',
-        queueOptions: { durable: true },
-      },
-    });
+    const rmqUrl = process.env.RMQ_URL;
+    if (!rmqUrl) {
+      console.error(
+        'RMQ_URL não definido no ambiente. Microservice não será iniciado.',
+      );
+    } else {
+      console.log(
+        `Conectando ao RabbitMQ: ${rmqUrl.replace(/:\/\/.*@/, '://***@')}`,
+      );
+      app.connectMicroservice<MicroserviceOptions>({
+        transport: Transport.RMQ,
+        options: {
+          urls: [rmqUrl],
+          queue: 'report_results',
+          queueOptions: { durable: true },
+        },
+      });
 
-    await app.startAllMicroservices();
+      await app.startAllMicroservices();
+    }
+  } else {
+    console.log('Microservice RMQ desabilitado (ENABLE_RMQ !== true)');
   }
 
-  await app.listen(3000);
-  console.log('Aplicação rodando na porta 3000 | Swagger: /');
+  const port = process.env.PORT ? Number(process.env.PORT) : 3000;
+  await app.listen(port);
+  console.log(
+    `Aplicação rodando na porta ${port} | Swagger: http://localhost:${port}/api`,
+  );
 }
 
-bootstrap();
+bootstrap().catch((err) => {
+  console.error('Erro fatal no bootstrap:', err);
+  process.exit(1);
+});
